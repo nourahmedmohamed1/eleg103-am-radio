@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Comprehensive interactive documentation for a multi-milestone AM Radio electronics project featuring 3D hardware visualizations, lab measurements, and circuit analysis.">
+  <title>AM Radio Project — Interactive Documentation</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- Favicon (radio emoji as SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>">
+</head>
+<body>
+
+  <!-- Mobile sidebar toggle -->
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
+
+  <div id="app-shell">
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <nav id="sidebar" aria-label="Milestone navigation">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">📻</div>
+          <h1>AM Radio<span>Project Documentation</span></h1>
+        </div>
+      </div>
+      <ul class="milestone-tabs" id="milestone-tabs">
+        <!-- Populated dynamically by app.js -->
+      </ul>
+      <div class="sidebar-footer">
+        Built with Circuit CAD &amp; KaTeX<br>
+        © 2026 AM Radio Project
+      </div>
+    </nav>
+
+    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+    <main id="main-content">
+
+      <!-- Milestone Header -->
+      <header class="milestone-header" id="milestone-header">
+        <span class="ms-number" id="ms-number">Milestone 1</span>
+        <h2 id="ms-title">Tuner &amp; Detector</h2>
+        <p class="ms-subtitle" id="ms-subtitle">LC Tank Circuit &amp; Diode Envelope Detection</p>
+      </header>
+
+      <!-- ──── Hero Grid: 3D Canvas + Media ──── -->
+      <div class="hero-grid">
+        <!-- Interactive Circuit Drawer Workbench -->
+        <div class="glass-card" id="circuit-cad-container">
+          <div class="card-header">
+            <div class="cad-header-left">
+              <h3><span class="header-dot"></span>Interactive Circuit Workbench &amp; Schematic CAD</h3>
+              <span class="hint">Draw, wire &amp; simulate circuit schematics</span>
+            </div>
+            <div class="cad-header-actions">
+              <button class="cad-btn" id="btn-load-preset" title="Reload current milestone schematic preset">🔄 Reset Preset</button>
+              <button class="cad-btn active" id="btn-cad-flow" title="Toggle current/signal flow animation">⚡ Signal Flow</button>
+              <button class="cad-btn" id="btn-cad-undo" title="Undo (Ctrl+Z)">↩ Undo</button>
+              <button class="cad-btn" id="btn-cad-rotate" title="Rotate selected component 90° (R)">↻ Rotate (R)</button>
+              <button class="cad-btn" id="btn-cad-clear" title="Clear canvas">🗑 Clear</button>
+              <button class="cad-btn btn-accent" id="btn-cad-export" title="Export schematic as PNG image">💾 Export PNG</button>
+            </div>
+          </div>
+
+          <!-- Component Palette Bar -->
+          <div class="cad-toolbar">
+            <div class="cad-tool-group">
+              <button class="cad-tool-btn active" data-tool="select" title="Select & Move (V)">
+                <span class="cad-icon">↖</span><span class="cad-label">Select</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="wire" title="Draw Wire (W) — click nodes, double-click to finish">
+                <span class="cad-icon">⚡</span><span class="cad-label">Wire (W)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="erase" title="Eraser (Del) — click to delete item">
+                <span class="cad-icon">✂</span><span class="cad-label">Delete</span>
+              </button>
+            </div>
+            <div class="cad-separator"></div>
+            <div class="cad-tool-group cad-components-group">
+              <span class="group-title">COMPONENTS:</span>
+              <button class="cad-tool-btn" data-tool="antenna" title="Antenna">
+                <span class="cad-symbol">📶</span><span class="cad-label">Antenna</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="inductor" title="Inductor / RF Coil">
+                <span class="cad-symbol">🌀</span><span class="cad-label">Inductor (L)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="var_capacitor" title="Variable Tuning Capacitor">
+                <span class="cad-symbol">🎛</span><span class="cad-label">Var Cap (C₁)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="capacitor" title="Capacitor">
+                <span class="cad-symbol">⫴</span><span class="cad-label">Capacitor (C)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="diode" title="Diode (1N34A / Ge)">
+                <span class="cad-symbol">🔺</span><span class="cad-label">Diode (D)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="resistor" title="Resistor">
+                <span class="cad-symbol">〰</span><span class="cad-label">Resistor (R)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="transistor" title="NPN BJT Transistor (2N3904)">
+                <span class="cad-symbol">⎇</span><span class="cad-label">NPN (Q)</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="vcc" title="+9V DC Supply">
+                <span class="cad-symbol">🔋</span><span class="cad-label">+9V VCC</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="ground" title="Ground">
+                <span class="cad-symbol">⏚</span><span class="cad-label">Ground</span>
+              </button>
+              <button class="cad-tool-btn" data-tool="speaker" title="8Ω Speaker / Audio Load">
+                <span class="cad-symbol">🔊</span><span class="cad-label">Speaker</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Canvas Area -->
+          <div class="card-body cad-canvas-wrapper">
+            <canvas id="circuit-canvas"></canvas>
+            <div class="cad-canvas-footer">
+              <span id="cad-status-msg">Click components above to place, or use Wire (W) to connect nodes. Double-click component to edit values.</span>
+              <span class="cad-canvas-hint">Grid: 20px · R: Rotate · Del: Delete · Ctrl+Z: Undo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Showcase Box -->
+        <div class="glass-card" id="media-container">
+          <div class="card-header">
+            <h3><span class="header-dot"></span>Lab Documentation</h3>
+            <div class="media-tabs">
+              <button class="media-tab-btn active" data-panel="video-panel" id="btn-video">▶ Video</button>
+              <button class="media-tab-btn" data-panel="gallery-panel" id="btn-gallery">🖼 Gallery</button>
+            </div>
+          </div>
+
+          <!-- Video Panel -->
+          <div class="media-panel active" id="video-panel">
+            <div id="video-wrapper-inner">
+              <!-- Replaced dynamically; shows placeholder if no src -->
+            </div>
+          </div>
+
+          <!-- Gallery Panel -->
+          <div class="media-panel" id="gallery-panel">
+            <div id="gallery-content">
+              <!-- Populated by carousel.js -->
+            </div>
+          </div>
+        </div>
+      </div><!-- /hero-grid -->
+
+      <!-- ──── Documentation Cards ──── -->
+      <div class="doc-grid" id="doc-grid">
+
+        <!-- Overview & Objectives -->
+        <div class="glass-card doc-card" id="card-overview">
+          <div class="card-header">
+            <h3><span class="header-dot"></span><span class="section-icon">🎯</span>Overview &amp; Objectives</h3>
+          </div>
+          <div class="card-body" id="overview-body">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Schematic & Components (two-column row) -->
+        <div class="glass-card doc-card" id="card-components">
+          <div class="card-header">
+            <h3><span class="header-dot"></span><span class="section-icon">🔧</span>Schematic &amp; Component Specifications</h3>
+          </div>
+          <div class="card-body" id="components-body">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Math & Theory -->
+        <div class="glass-card doc-card" id="card-math">
+          <div class="card-header">
+            <h3><span class="header-dot"></span><span class="section-icon">📐</span>Math &amp; Theory</h3>
+          </div>
+          <div class="card-body" id="math-body">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Interactive Data Tables -->
+        <div class="glass-card doc-card" id="card-data">
+          <div class="card-header">
+            <h3><span class="header-dot"></span><span class="section-icon">📊</span>Measured Data — Predicted vs. Actual</h3>
+          </div>
+          <div class="card-body" id="data-body">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+
+        <!-- Challenges & Troubleshooting -->
+        <div class="glass-card doc-card" id="card-challenges">
+          <div class="card-header">
+            <h3><span class="header-dot"></span><span class="section-icon">⚠️</span>Challenges &amp; Troubleshooting</h3>
+          </div>
+          <div class="card-body" id="challenges-body">
+            <!-- Populated by app.js -->
+          </div>
+        </div>
+
+      </div><!-- /doc-grid -->
+    </main>
+  </div><!-- /app-shell -->
+
+  <!-- ═══════════════ LIGHTBOX MODAL ═══════════════ -->
+  <div class="lightbox-overlay" id="lightbox">
+    <button class="lightbox-nav prev" id="lightbox-prev" aria-label="Previous image">❮</button>
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">✕</button>
+      <img id="lightbox-img" src="" alt="Enlarged view">
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+    </div>
+    <button class="lightbox-nav next" id="lightbox-next" aria-label="Next image">❯</button>
+  </div>
+
+  <!-- ═══════════════ SCRIPTS ═══════════════ -->
+  <!-- KaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+  <!-- App scripts (order matters: data → circuit-drawer → carousel → app) -->
+  <script src="js/data.js"></script>
+  <script src="js/circuit-drawer.js"></script>
+  <script src="js/carousel.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
