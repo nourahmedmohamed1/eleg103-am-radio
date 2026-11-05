@@ -1,232 +1,931 @@
+1
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Comprehensive interactive documentation for a multi-milestone AM Radio electronics project featuring 3D hardware visualizations, lab measurements, and circuit analysis.">
-  <title>AM Radio Project — Interactive Documentation</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medium-Wave Radio DIY Guide — SBME ELEG103</title>
+  <meta name="description"
+    content="ELEG103 Analog &amp; Digital Electronics — Milestone 1 (M1) Technical Laboratory Documentation: Tuner LC Tank, Wheeler Coil Inductance, and Germanium Diode Envelope Detection." />
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css">
-  <!-- KaTeX for math rendering -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-
-  <!-- Favicon (radio emoji as SVG) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>">
-</head>
-<body>
-
-  <!-- Mobile sidebar toggle -->
-  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
-
-  <div id="app-shell">
-    <!-- ═══════════════ SIDEBAR ═══════════════ -->
-    <nav id="sidebar" aria-label="Milestone navigation">
-      <div class="sidebar-header">
-        <div class="sidebar-brand">
-          <div class="brand-icon">📻</div>
-          <h1>AM Radio<span>Project Documentation</span></h1>
-        </div>
-      </div>
-      <ul class="milestone-tabs" id="milestone-tabs">
-        <!-- Populated dynamically by app.js -->
-      </ul>
-      <div class="sidebar-footer">
-        Built with Circuit CAD &amp; KaTeX<br>
-        © 2026 AM Radio Project
-      </div>
-    </nav>
-
-    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
-    <main id="main-content">
-
-      <!-- Milestone Header -->
-      <header class="milestone-header" id="milestone-header">
-        <span class="ms-number" id="ms-number">Milestone 1</span>
-        <h2 id="ms-title">Tuner &amp; Detector</h2>
-        <p class="ms-subtitle" id="ms-subtitle">LC Tank Circuit &amp; Diode Envelope Detection</p>
-      </header>
-
-      <!-- ──── Hero Grid: 3D Canvas + Media ──── -->
-      <div class="hero-grid">
-        <!-- Interactive Circuit Drawer Workbench -->
-        <div class="glass-card" id="circuit-cad-container">
-          <div class="card-header">
-            <div class="cad-header-left">
-              <h3><span class="header-dot"></span>Interactive Circuit Workbench &amp; Schematic CAD</h3>
-              <span class="hint">Draw, wire &amp; simulate circuit schematics</span>
-            </div>
-            <div class="cad-header-actions">
-              <button class="cad-btn" id="btn-load-preset" title="Reload current milestone schematic preset">🔄 Reset Preset</button>
-              <button class="cad-btn active" id="btn-cad-flow" title="Toggle current/signal flow animation">⚡ Signal Flow</button>
-              <button class="cad-btn" id="btn-cad-undo" title="Undo (Ctrl+Z)">↩ Undo</button>
-              <button class="cad-btn" id="btn-cad-rotate" title="Rotate selected component 90° (R)">↻ Rotate (R)</button>
-              <button class="cad-btn" id="btn-cad-clear" title="Clear canvas">🗑 Clear</button>
-              <button class="cad-btn btn-accent" id="btn-cad-export" title="Export schematic as PNG image">💾 Export PNG</button>
-            </div>
-          </div>
-
-          <!-- Component Palette Bar -->
-          <div class="cad-toolbar">
-            <div class="cad-tool-group">
-              <button class="cad-tool-btn active" data-tool="select" title="Select & Move (V)">
-                <span class="cad-icon">↖</span><span class="cad-label">Select</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="wire" title="Draw Wire (W) — click nodes, double-click to finish">
-                <span class="cad-icon">⚡</span><span class="cad-label">Wire (W)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="erase" title="Eraser (Del) — click to delete item">
-                <span class="cad-icon">✂</span><span class="cad-label">Delete</span>
-              </button>
-            </div>
-            <div class="cad-separator"></div>
-            <div class="cad-tool-group cad-components-group">
-              <span class="group-title">COMPONENTS:</span>
-              <button class="cad-tool-btn" data-tool="antenna" title="Antenna">
-                <span class="cad-symbol">📶</span><span class="cad-label">Antenna</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="inductor" title="Inductor / RF Coil">
-                <span class="cad-symbol">🌀</span><span class="cad-label">Inductor (L)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="var_capacitor" title="Variable Tuning Capacitor">
-                <span class="cad-symbol">🎛</span><span class="cad-label">Var Cap (C₁)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="capacitor" title="Capacitor">
-                <span class="cad-symbol">⫴</span><span class="cad-label">Capacitor (C)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="diode" title="Diode (1N34A / Ge)">
-                <span class="cad-symbol">🔺</span><span class="cad-label">Diode (D)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="resistor" title="Resistor">
-                <span class="cad-symbol">〰</span><span class="cad-label">Resistor (R)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="transistor" title="NPN BJT Transistor (2N3904)">
-                <span class="cad-symbol">⎇</span><span class="cad-label">NPN (Q)</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="vcc" title="+9V DC Supply">
-                <span class="cad-symbol">🔋</span><span class="cad-label">+9V VCC</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="ground" title="Ground">
-                <span class="cad-symbol">⏚</span><span class="cad-label">Ground</span>
-              </button>
-              <button class="cad-tool-btn" data-tool="speaker" title="8Ω Speaker / Audio Load">
-                <span class="cad-symbol">🔊</span><span class="cad-label">Speaker</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Interactive Canvas Area -->
-          <div class="card-body cad-canvas-wrapper">
-            <canvas id="circuit-canvas"></canvas>
-            <div class="cad-canvas-footer">
-              <span id="cad-status-msg">Click components above to place, or use Wire (W) to connect nodes. Double-click component to edit values.</span>
-              <span class="cad-canvas-hint">Grid: 20px · R: Rotate · Del: Delete · Ctrl+Z: Undo</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Media Showcase Box -->
-        <div class="glass-card" id="media-container">
-          <div class="card-header">
-            <h3><span class="header-dot"></span>Lab Documentation</h3>
-            <div class="media-tabs">
-              <button class="media-tab-btn active" data-panel="video-panel" id="btn-video">▶ Video</button>
-              <button class="media-tab-btn" data-panel="gallery-panel" id="btn-gallery">🖼 Gallery</button>
-            </div>
-          </div>
-
-          <!-- Video Panel -->
-          <div class="media-panel active" id="video-panel">
-            <div id="video-wrapper-inner">
-              <!-- Replaced dynamically; shows placeholder if no src -->
-            </div>
-          </div>
-
-          <!-- Gallery Panel -->
-          <div class="media-panel" id="gallery-panel">
-            <div id="gallery-content">
-              <!-- Populated by carousel.js -->
-            </div>
-          </div>
-        </div>
-      </div><!-- /hero-grid -->
-
-      <!-- ──── Documentation Cards ──── -->
-      <div class="doc-grid" id="doc-grid">
-
-        <!-- Overview & Objectives -->
-        <div class="glass-card doc-card" id="card-overview">
-          <div class="card-header">
-            <h3><span class="header-dot"></span><span class="section-icon">🎯</span>Overview &amp; Objectives</h3>
-          </div>
-          <div class="card-body" id="overview-body">
-            <!-- Populated by app.js -->
-          </div>
-        </div>
-
-        <!-- Schematic & Components (two-column row) -->
-        <div class="glass-card doc-card" id="card-components">
-          <div class="card-header">
-            <h3><span class="header-dot"></span><span class="section-icon">🔧</span>Schematic &amp; Component Specifications</h3>
-          </div>
-          <div class="card-body" id="components-body">
-            <!-- Populated by app.js -->
-          </div>
-        </div>
-
-        <!-- Math & Theory -->
-        <div class="glass-card doc-card" id="card-math">
-          <div class="card-header">
-            <h3><span class="header-dot"></span><span class="section-icon">📐</span>Math &amp; Theory</h3>
-          </div>
-          <div class="card-body" id="math-body">
-            <!-- Populated by app.js -->
-          </div>
-        </div>
-
-        <!-- Interactive Data Tables -->
-        <div class="glass-card doc-card" id="card-data">
-          <div class="card-header">
-            <h3><span class="header-dot"></span><span class="section-icon">📊</span>Measured Data — Predicted vs. Actual</h3>
-          </div>
-          <div class="card-body" id="data-body">
-            <!-- Populated by app.js -->
-          </div>
-        </div>
-
-        <!-- Challenges & Troubleshooting -->
-        <div class="glass-card doc-card" id="card-challenges">
-          <div class="card-header">
-            <h3><span class="header-dot"></span><span class="section-icon">⚠️</span>Challenges &amp; Troubleshooting</h3>
-          </div>
-          <div class="card-body" id="challenges-body">
-            <!-- Populated by app.js -->
-          </div>
-        </div>
-
-      </div><!-- /doc-grid -->
-    </main>
-  </div><!-- /app-shell -->
-
-  <!-- ═══════════════ LIGHTBOX MODAL ═══════════════ -->
-  <div class="lightbox-overlay" id="lightbox">
-    <button class="lightbox-nav prev" id="lightbox-prev" aria-label="Previous image">❮</button>
-    <div class="lightbox-content">
-      <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">✕</button>
-      <img id="lightbox-img" src="" alt="Enlarged view">
-      <p class="lightbox-caption" id="lightbox-caption"></p>
-    </div>
-    <button class="lightbox-nav next" id="lightbox-next" aria-label="Next image">❯</button>
-  </div>
-
-  <!-- ═══════════════ SCRIPTS ═══════════════ -->
-  <!-- KaTeX -->
+  <!-- KaTeX for exact math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
-  <!-- App scripts (order matters: data → circuit-drawer → carousel → app) -->
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════
+       STICKY NAV BAR
+       ═══════════════════════════════════════════════════════ -->
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-brand">
+        <svg class="nav-brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14" />
+        </svg>
+        <span class="nav-brand-title">ELEG103 <span class="nav-brand-sub">Radio Guide</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#milestone-1-section">Milestone 1</a></li>
+        <li><a href="#circuit-cad-container">CAD Workbench</a></li>
+        <li><a href="#media-container">Lab Media</a></li>
+        <li><a href="#card-data">Data Tables</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#team-section">Team</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════
+       HERO SECTION
+       ═══════════════════════════════════════════════════════ -->
+  <section class="hero-section" id="hero">
+    <!-- Technical Blueprint Concentric Field Lines -->
+    <div class="hero-waves" aria-hidden="true">
+      <span class="wave-ring wave-ring--1"></span>
+      <span class="wave-ring wave-ring--2"></span>
+      <span class="wave-ring wave-ring--3"></span>
+      <span class="wave-ring wave-ring--4"></span>
+    </div>
+
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="hero-tag">
+          <span class="hero-tag-dot"></span>
+          <span>CAIRO UNIVERSITY · FACULTY OF ENGINEERING · SBME DEPARTMENT</span>
+        </div>
+        <h1 class="hero-title">
+          <span class="hero-title-accent">Medium-Wave Radio</span> DIY Guide
+        </h1>
+        <p class="hero-subtitle">ELEG103 Analog and Digital Electronics · Fall 2026</p>
+        <p class="hero-tagline">
+          Laboratory investigation, Wheeler coil inductance derivation, and experimental characterization of the
+          Milestone 1 LC Resonant Tank &amp; Germanium Diode Envelope Detector.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="#milestone-1-section" class="btn btn-primary">
+            <span>Explore Milestone 1</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </a>
+          <a href="#roadmap" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+            <span>View Roadmap</span>
+          </a>
+          <a href="#card-data" class="btn btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="3" y1="15" x2="21" y2="15" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+            </svg>
+            <span>Measured Lab Data</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Hero Radio Station & Waveform Monitor (VISUAL RADIO PROOF) ── -->
+      <div class="hero-radio-deck" id="hero-radio-deck">
+        <div class="radio-deck-header">
+          <div class="radio-deck-brand">
+            <div class="radio-antenna-icon" title="Medium-Wave Receiving Antenna">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M5 7l7-5 7 5M7 12l5-3.5 5 3.5" />
+              </svg>
+              <span class="antenna-wave-pulse"></span>
+            </div>
+            <div>
+              <span class="deck-title">AM RECEIVER TUNING DECK</span>
+              <span class="deck-band">MEDIUM-WAVE BROADCAST (530–1700 kHz)</span>
+            </div>
+          </div>
+          <div class="radio-status-pill">
+            <span class="radio-live-dot"></span>
+            <span class="radio-status-text" id="hero-radio-status">TUNED · 819.0 kHz</span>
+          </div>
+        </div>
+
+        <!-- AM Dial & Needle -->
+        <div class="radio-dial-glass">
+          <div class="radio-dial-scale">
+            <span class="dial-mark" style="left: 6%;">530</span>
+            <span class="dial-mark" style="left: 20%;">600</span>
+            <span class="dial-mark" style="left: 36%;">700</span>
+            <span class="dial-mark dial-mark--target" style="left: 54%;">819 kHz<small>CAIRO MW</small></span>
+            <span class="dial-mark" style="left: 72%;">1000</span>
+            <span class="dial-mark" style="left: 88%;">1400</span>
+          </div>
+          <div class="radio-dial-needle" id="hero-dial-needle" style="left: 54%;"></div>
+        </div>
+
+        <!-- Radio Oscilloscope Waveform Monitor -->
+        <div class="radio-scope-viewport">
+          <canvas id="hero-radio-canvas" width="600" height="180"></canvas>
+          <div class="radio-scope-overlay">
+            <div class="scope-ch-badge">CH1: RF TANK (TP1) · 819 kHz</div>
+            <div class="scope-ch-badge scope-ch-badge--ch2">CH2: ENVELOPE (TP3)</div>
+          </div>
+          <div class="radio-vu-meter">
+            <span class="vu-bar" style="height: 45%;"></span>
+            <span class="vu-bar" style="height: 65%;"></span>
+            <span class="vu-bar" style="height: 85%;"></span>
+            <span class="vu-bar" style="height: 98%;"></span>
+            <span class="vu-bar" style="height: 70%;"></span>
+            <span class="vu-bar" style="height: 50%;"></span>
+          </div>
+        </div>
+
+        <!-- Interactive Radio Controls Bar -->
+        <div class="radio-controls-bar">
+          <div class="radio-control-knob-group">
+            <label class="radio-control-label" for="hero-tuning-slider">TUNING CAPACITOR (C₁):</label>
+            <input type="range" id="hero-tuning-slider" min="530" max="1400" value="819" step="1"
+              class="radio-slider" />
+            <span class="radio-freq-val" id="hero-freq-val">819 kHz</span>
+          </div>
+          <div class="radio-signal-mode">
+            <button class="radio-btn-mode active" id="btn-mode-am" title="View Full AM Modulated RF Carrier">AM
+              Wave</button>
+            <button class="radio-btn-mode" id="btn-mode-demod"
+              title="View Recovered Audio Envelope">Demodulated</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-fade" aria-hidden="true"></div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       ROADMAP SECTION
+       ═══════════════════════════════════════════════════════ -->
+  <section class="roadmap-section" id="roadmap">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="section-kicker">PROJECT ARCHITECTURE</span>
+        <h2 class="section-heading">Milestone Roadmap</h2>
+        <p class="section-subheading">Strict scope control: Milestone 1 is fully active; future development stages are
+          locked.</p>
+      </div>
+
+      <div class="roadmap-timeline">
+        <!-- M1 — Active / Unlocked -->
+        <a href="#milestone-1-section" class="roadmap-card roadmap-card--active">
+          <div class="roadmap-step-pill">STAGE 01 · ACTIVE</div>
+          <div class="roadmap-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14" />
+            </svg>
+          </div>
+          <span class="roadmap-badge roadmap-badge--complete">
+            <svg class="badge-icon-svg" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="2.5">
+              <polyline points="3.5 8 6.5 11 12.5 4.5" />
+            </svg>
+            Active &amp; Verified
+          </span>
+          <h3 class="roadmap-title">M1: Tank Circuit &amp; Detector</h3>
+          <p class="roadmap-desc">75-turn Wheeler solenoid (291.45 µH), 20–280 pF polyvaricon capacitor, and 1N60P
+            envelope detection at 819 kHz.</p>
+          <div class="roadmap-action-link">
+            <span>Explore Milestone 1 Documentation</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+
+        <!-- M2 — Locked -->
+        <div class="roadmap-card roadmap-card--locked">
+          <div class="roadmap-step-pill">STAGE 02 · LOCKED</div>
+          <div class="roadmap-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <span class="roadmap-badge roadmap-badge--locked">
+            <svg class="badge-icon-svg" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="7" width="10" height="7" rx="1.5" />
+              <path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" />
+            </svg>
+            Locked for Milestone 1
+          </span>
+          <h3 class="roadmap-title">M2: Audio Amplifier</h3>
+          <p class="roadmap-desc">Two Common-Emitter transistor stages &amp; RF gain control to boost the detected
+            station signal.</p>
+        </div>
+
+        <!-- M3 — Locked -->
+        <div class="roadmap-card roadmap-card--locked">
+          <div class="roadmap-step-pill">STAGE 03 · LOCKED</div>
+          <div class="roadmap-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <span class="roadmap-badge roadmap-badge--locked">
+            <svg class="badge-icon-svg" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="7" width="10" height="7" rx="1.5" />
+              <path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" />
+            </svg>
+            Locked for Milestone 1
+          </span>
+          <h3 class="roadmap-title">M3: Power Supply &amp; Stripboard</h3>
+          <p class="roadmap-desc">Regulated +9V DC power rail, ripple rejection filtering, and soldered perfboard
+            transfer.</p>
+        </div>
+
+        <!-- M4 — Locked -->
+        <div class="roadmap-card roadmap-card--locked">
+          <div class="roadmap-step-pill">STAGE 04 · LOCKED</div>
+          <div class="roadmap-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <span class="roadmap-badge roadmap-badge--locked">
+            <svg class="badge-icon-svg" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <rect x="3" y="7" width="10" height="7" rx="1.5" />
+              <path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" />
+            </svg>
+            Locked for Milestone 1
+          </span>
+          <h3 class="roadmap-title">M4: System Integration</h3>
+          <p class="roadmap-desc">Complete chassis assembly, 8Ω speaker coupling, and live medium-wave AM broadcast
+            reception.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN CONTENT — MILESTONE 1
+       ═══════════════════════════════════════════════════════ -->
+  <main>
+    <section class="milestone-section" id="milestone-1-section">
+      <div class="container">
+
+        <!-- ── 3a. Section Header ──────────────────────────── -->
+        <header class="milestone-header">
+          <span class="milestone-badge">Milestone 1 — Technical Specification</span>
+          <h2 class="milestone-title">Tuner &amp; Detector Stage</h2>
+          <p class="milestone-subtitle">Parallel LC Tank Resonance, Mutual Inductive Coupling &amp; Low-Barrier
+            Germanium Envelope Demodulation</p>
+        </header>
+
+        <!-- ── 3b. Circuit CAD Workbench ───────────────────── -->
+        <div class="doc-card glass-card" id="circuit-cad-container">
+          <div class="doc-card__header">
+            <div class="cad-header-title">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <line x1="9" y1="9" x2="15" y2="9" />
+                <line x1="9" y1="15" x2="15" y2="15" />
+                <line x1="12" y1="4" x2="12" y2="2" />
+                <line x1="12" y1="20" x2="12" y2="22" />
+              </svg>
+              <div>
+                <h3>Milestone 1 Schematic: Tank &amp; Envelope Detector</h3>
+                <span class="card-caption">Exact circuit topology matching ELEG103 laboratory manual and
+                  specifications.</span>
+              </div>
+            </div>
+            <div class="cad-header-actions">
+              <button class="btn btn-sm btn-outline active" id="btn-theme-paper"
+                title="Switch to Authentic Lab Manual Paper Style">Paper Style</button>
+              <button class="btn btn-sm btn-outline" id="btn-theme-blueprint"
+                title="Switch to Dark Slate Blueprint Style">Dark Slate</button>
+              <a href="images/m1_schematic_official.jpg" target="_blank" class="btn btn-sm btn-accent"
+                id="btn-view-official" title="View Original Lab Manual Crop Image">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span>Original Figure</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="doc-card__body doc-card__body--flush">
+            <!-- Exact Lab Manual Schematic Card -->
+            <div class="official-schematic-frame" id="schematic-frame">
+              <svg class="official-schematic-svg" viewBox="0 0 940 264" width="100%" height="auto"
+                xmlns="http://www.w3.org/2000/svg">
+                <!-- ── 1. The Test Loop (Left) ── -->
+                <!-- Generator Text -->
+                <text x="100" y="142" font-family="'Times New Roman', Times, serif" font-size="17" text-anchor="end"
+                  fill="currentColor">generator</text>
+
+                <!-- Generator Circle -->
+                <circle cx="138" cy="136" r="18" fill="none" stroke="currentColor" stroke-width="1.8" />
+                <!-- Sine wave inside generator -->
+                <path d="M 127 136 C 130 128, 134 128, 138 136 C 142 144, 146 144, 149 136" fill="none"
+                  stroke="currentColor" stroke-width="1.8" />
+
+                <!-- Rectangular loop wire from generator to 5-turn inductor -->
+                <!-- Top wire: (138, 118) -> (138, 68) -> (235, 68) -->
+                <path d="M 138 118 L 138 68 L 235 68" fill="none" stroke="currentColor" stroke-width="1.8" />
+                <!-- Bottom wire: (138, 154) -> (138, 204) -> (235, 204) -->
+                <path d="M 138 154 L 138 204 L 235 204" fill="none" stroke="currentColor" stroke-width="1.8" />
+
+                <!-- Label "5 turns" -->
+                <text x="186" y="142" font-family="'Times New Roman', Times, serif" font-size="17" text-anchor="middle"
+                  fill="currentColor">5 turns</text>
+
+                <!-- 5-turn Inductor at x=235, y: 68 to 204 (humps curved right) -->
+                <path d="M 235 68
+                         A 13.6 13.6 0 0 1 235 95.2
+                         A 13.6 13.6 0 0 1 235 122.4
+                         A 13.6 13.6 0 0 1 235 149.6
+                         A 13.6 13.6 0 0 1 235 176.8
+                         A 13.6 13.6 0 0 1 235 204" fill="none" stroke="currentColor" stroke-width="1.8" />
+
+                <!-- Subtitle: "the test loop" -->
+                <text x="186" y="248" font-family="'Times New Roman', Times, serif" font-size="15" text-anchor="middle"
+                  fill="currentColor">the test loop</text>
+
+                <!-- ── 2. Mutual Coupling Arrow ── -->
+                <text x="302" y="106" font-family="'Times New Roman', Times, serif" font-size="14.5"
+                  text-anchor="middle" fill="currentColor">a few</text>
+                <text x="302" y="122" font-family="'Times New Roman', Times, serif" font-size="14.5"
+                  text-anchor="middle" fill="currentColor">cm</text>
+
+                <!-- Dashed double-headed arrow -->
+                <line x1="262" y1="136" x2="342" y2="136" stroke="currentColor" stroke-width="1.4"
+                  stroke-dasharray="4, 3" />
+                <!-- Left arrow head -->
+                <polyline points="270 131, 262 136, 270 141" fill="none" stroke="currentColor" stroke-width="1.4" />
+                <!-- Right arrow head -->
+                <polyline points="334 131, 342 136, 334 141" fill="none" stroke="currentColor" stroke-width="1.4" />
+
+                <!-- ── 3. M1: The Tank, Then The Detector (Right) ── -->
+                <!-- 75-turn Inductor at x=368, y: 68 to 204 (humps curved left) -->
+                <path d="M 368 68
+                         A 13.6 13.6 0 0 0 368 95.2
+                         A 13.6 13.6 0 0 0 368 122.4
+                         A 13.6 13.6 0 0 0 368 149.6
+                         A 13.6 13.6 0 0 0 368 176.8
+                         A 13.6 13.6 0 0 0 368 204" fill="none" stroke="currentColor" stroke-width="1.8" />
+
+                <!-- Label "75 turns" -->
+                <text x="386" y="142" font-family="'Times New Roman', Times, serif" font-size="17"
+                  fill="currentColor">75 turns</text>
+
+                <!-- Top Rail from 75 turns to capacitor and beyond -->
+                <line x1="368" y1="68" x2="520" y2="68" stroke="currentColor" stroke-width="1.8" />
+                <!-- Bottom Rail from 75 turns to capacitor and output terminal -->
+                <line x1="368" y1="204" x2="816" y2="204" stroke="currentColor" stroke-width="1.8" />
+
+                <!-- Variable Tuning Capacitor at x=466 -->
+                <!-- Top wire to top plate -->
+                <line x1="466" y1="68" x2="466" y2="130" stroke="currentColor" stroke-width="1.8" />
+                <!-- Top plate -->
+                <line x1="448" y1="130" x2="484" y2="130" stroke="currentColor" stroke-width="2.2" />
+                <!-- Bottom plate -->
+                <line x1="448" y1="142" x2="484" y2="142" stroke="currentColor" stroke-width="2.2" />
+                <!-- Bottom wire from bottom plate -->
+                <line x1="466" y1="142" x2="466" y2="204" stroke="currentColor" stroke-width="1.8" />
+                <!-- Diagonal tuning arrow -->
+                <line x1="442" y1="158" x2="488" y2="114" stroke="currentColor" stroke-width="1.6" />
+                <polyline points="478 114, 488 114, 488 124" fill="none" stroke="currentColor" stroke-width="1.6" />
+                <!-- Label "20 to 280 pF" -->
+                <text x="498" y="142" font-family="'Times New Roman', Times, serif" font-size="17"
+                  fill="currentColor">20 to 280 pF</text>
+
+                <!-- Node Dot: TP1 -->
+                <circle cx="466" cy="68" r="3.2" fill="currentColor" />
+                <text x="466" y="50" font-family="'Times New Roman', Times, serif" font-size="16.5" text-anchor="middle"
+                  fill="currentColor">TP1</text>
+
+                <!-- 1N60P Germanium Diode -->
+                <!-- Label "1N60P" above diode -->
+                <text x="546" y="38" font-family="'Times New Roman', Times, serif" font-size="16.5" text-anchor="middle"
+                  fill="currentColor">1N60P</text>
+                <!-- Wire into diode anode -->
+                <line x1="466" y1="68" x2="528" y2="68" stroke="currentColor" stroke-width="1.8" />
+                <!-- Diode Triangle pointing right -->
+                <polygon points="528,54 528,82 556,68" fill="none" stroke="currentColor" stroke-width="1.8" />
+                <!-- Diode vertical cathode line -->
+                <line x1="556" y1="54" x2="556" y2="82" stroke="currentColor" stroke-width="1.8" />
+                <!-- Wire out of diode cathode -->
+                <line x1="556" y1="68" x2="816" y2="68" stroke="currentColor" stroke-width="1.8" />
+
+                <!-- 15 kΩ Load Resistor at x=646 -->
+                <!-- Node dot on top rail -->
+                <circle cx="646" cy="68" r="3.2" fill="currentColor" />
+                <!-- Wire down to resistor -->
+                <line x1="646" y1="68" x2="646" y2="102" stroke="currentColor" stroke-width="1.8" />
+                <!-- Zigzag Resistor -->
+                <polyline points="646 102, 656 107, 636 117, 656 127, 636 137, 656 147, 636 157, 646 166" fill="none"
+                  stroke="currentColor" stroke-width="1.8" />
+                <!-- Wire to bottom rail -->
+                <line x1="646" y1="166" x2="646" y2="204" stroke="currentColor" stroke-width="1.8" />
+                <!-- Node dot at bottom rail -->
+                <circle cx="646" cy="204" r="3.2" fill="currentColor" />
+                <!-- Label "15 kΩ" -->
+                <text x="666" y="142" font-family="'Times New Roman', Times, serif" font-size="17"
+                  fill="currentColor">15 kΩ</text>
+
+                <!-- Ground symbol directly below 15 kΩ resistor -->
+                <line x1="646" y1="204" x2="646" y2="216" stroke="currentColor" stroke-width="1.8" />
+                <line x1="634" y1="216" x2="658" y2="216" stroke="currentColor" stroke-width="2" />
+                <line x1="638" y1="221" x2="654" y2="221" stroke="currentColor" stroke-width="2" />
+                <line x1="642" y1="226" x2="650" y2="226" stroke="currentColor" stroke-width="2" />
+
+                <!-- 3.3 nF Filter Capacitor at x=756 -->
+                <!-- Node dot on top rail -->
+                <circle cx="756" cy="68" r="3.2" fill="currentColor" />
+                <!-- Wire down to top plate -->
+                <line x1="756" y1="68" x2="756" y2="130" stroke="currentColor" stroke-width="1.8" />
+                <!-- Top plate -->
+                <line x1="738" y1="130" x2="774" y2="130" stroke="currentColor" stroke-width="2.2" />
+                <!-- Bottom plate -->
+                <line x1="738" y1="142" x2="774" y2="142" stroke="currentColor" stroke-width="2.2" />
+                <!-- Wire from bottom plate to bottom rail -->
+                <line x1="756" y1="142" x2="756" y2="204" stroke="currentColor" stroke-width="1.8" />
+                <!-- Node dot on bottom rail -->
+                <circle cx="756" cy="204" r="3.2" fill="currentColor" />
+                <!-- Label "3.3 nF" -->
+                <text x="786" y="142" font-family="'Times New Roman', Times, serif" font-size="17"
+                  fill="currentColor">3.3 nF</text>
+
+                <!-- Output Terminals on the other hand of 3.3 nF capacitor -->
+                <!-- Top output terminal: open circle at (820, 68) with label "TP3" -->
+                <circle cx="820" cy="68" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+                <text x="836" y="73" font-family="'Times New Roman', Times, serif" font-size="17"
+                  fill="currentColor">TP3</text>
+
+                <!-- Bottom output terminal: open circle at (820, 204) -->
+                <circle cx="820" cy="204" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8" />
+
+                <!-- Subtitle: "M1: the tank, then the detector" -->
+                <text x="592" y="248" font-family="'Times New Roman', Times, serif" font-size="15" text-anchor="middle"
+                  fill="currentColor">M1: the tank, then the detector</text>
+              </svg>
+            </div>
+
+            <div class="cad-status-bar" id="cad-status-bar">
+              <span id="cad-status-msg">Official Milestone 1 Circuit: 5-Turn Test Loop --(a few cm)--> 75-Turn Tank ||
+                20–280 pF Polyvaricon → 1N60P Diode → 15 kΩ || 3.3 nF → TP3 Output</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 3c. Lab Documentation Media Panel (EXPANDED WIDESCREEN) ────── -->
+        <div class="doc-card glass-card media-showcase-card" id="media-container">
+          <div class="doc-card__header">
+            <div class="media-header-left">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+              <div>
+                <h3>Laboratory Demonstration &amp; Hardware Showcase</h3>
+                <span class="card-caption">Bench oscilloscope measurements and high-resolution breadboard hardware
+                  captures.</span>
+              </div>
+            </div>
+            <div class="media-tabs">
+              <button class="media-tab active" id="btn-video" data-panel="video-panel">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Video Demonstration
+              </button>
+              <button class="media-tab" id="btn-gallery" data-panel="gallery-panel">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                Hardware Gallery
+              </button>
+            </div>
+          </div>
+
+          <div class="doc-card__body media-body-expanded">
+            <!-- Video Panel (Expanded 16:9 Viewport) -->
+            <div class="media-panel active" id="video-panel">
+              <div class="video-container-widescreen">
+                <div id="video-wrapper-inner" class="video-wrapper-large">
+                  <p class="placeholder-text">Video stream initializing...</p>
+                </div>
+                <div class="video-meta-bar">
+                  <div class="video-meta-left">
+                    <span class="meta-tag">BENCH VIDEO DEMO</span>
+                    <span class="meta-title">Milestone 1: RF Tank Tuning &amp; Diode Envelope Recovery at TP3</span>
+                  </div>
+                  <div class="video-meta-right">
+                    <span class="meta-pill">f₀ = 819 kHz</span>
+                    <span class="meta-pill">Coupling: 2.5 cm</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gallery Panel (High-Res Expansive Viewport) -->
+            <div class="media-panel" id="gallery-panel">
+              <div id="gallery-content" class="gallery-wrapper-large">
+                <p class="placeholder-text">Gallery images loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 3d. Overview & Objectives ───────────────────── -->
+        <div class="doc-card glass-card" id="card-overview">
+          <div class="doc-card__header">
+            <div class="card-header-flex">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <h3>Overview &amp; Learning Objectives</h3>
+            </div>
+          </div>
+          <div class="doc-card__body" id="overview-body">
+            <!-- Populated dynamically from data.js -->
+          </div>
+        </div>
+
+        <!-- ── 3e. Schematic & Component Specifications ────── -->
+        <div class="doc-card glass-card" id="card-components">
+          <div class="doc-card__header">
+            <div class="card-header-flex">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <h3>Schematic &amp; Component Bill of Materials</h3>
+            </div>
+          </div>
+          <div class="doc-card__body" id="components-body">
+            <!-- Populated dynamically from data.js -->
+          </div>
+        </div>
+
+        <!-- ── 3f. Math & Theory ───────────────────────────── -->
+        <div class="doc-card glass-card" id="card-math">
+          <div class="doc-card__header">
+            <div class="card-header-flex">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path d="M4 19h16M4 5h16M9 9l3 6 3-6" />
+              </svg>
+              <h3>Analytical Math &amp; RF Tank Derivations</h3>
+            </div>
+          </div>
+          <div class="doc-card__body" id="math-body">
+            <!-- Populated dynamically from data.js using KaTeX -->
+          </div>
+        </div>
+
+        <!-- ── 3g. Data Tables ─────────────────────────────── -->
+        <div class="doc-card glass-card" id="card-data">
+          <div class="doc-card__header">
+            <div class="card-header-flex">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="3" y1="15" x2="21" y2="15" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="15" y1="3" x2="15" y2="21" />
+              </svg>
+              <div>
+                <h3>Laboratory Experimental Data Tables</h3>
+                <span class="card-caption">Exact Milestone 1 measurements recorded on the laboratory test bench.</span>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-accent" id="btn-download-csv" title="Export Table 4, 5, and 6 to CSV file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Download Data (.csv)
+            </button>
+          </div>
+
+          <div class="doc-card__body" id="data-body">
+            <!-- Table 4: M1 Predictions -->
+            <div class="table-section">
+              <div class="table-header-row">
+                <h4 class="table-title">Table 4: M1 Predictions (75-Turn Coil, 20–280 pF Polyvaricon, Detector)</h4>
+                <span class="table-tag">PRE-LAB DERIVATION</span>
+              </div>
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter Description</th>
+                      <th>Symbol &amp; Derivation</th>
+                      <th>Predicted Specification</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Calculated Solenoid Inductance (N = 75 turns)</td>
+                      <td>L (Wheeler Formula)</td>
+                      <td class="font-mono text-accent">291.45 µH</td>
+                    </tr>
+                    <tr>
+                      <td>Required Capacitance for Cairo AM Carrier (819 kHz)</td>
+                      <td>C @ 819 kHz</td>
+                      <td class="font-mono text-accent">129.57 pF</td>
+                    </tr>
+                    <tr>
+                      <td>Lower Frequency Band Boundary (C = 280 pF)</td>
+                      <td>f @ 280 pF</td>
+                      <td class="font-mono text-accent">557 kHz</td>
+                    </tr>
+                    <tr>
+                      <td>Upper Frequency Band Boundary (C = 20 pF)</td>
+                      <td>f @ 20 pF</td>
+                      <td class="font-mono text-accent">2.08 MHz</td>
+                    </tr>
+                    <tr>
+                      <td>Detector Envelope Filter Time Constant</td>
+                      <td>RC = R₁ × C₂</td>
+                      <td class="font-mono text-accent">50 µs (~49.5 µs)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Table 5: Tank Characteristics -->
+            <div class="table-section">
+              <div class="table-header-row">
+                <h4 class="table-title">Table 5: Tank Characteristics at TP1 (Driven by 5-Turn Test Loop)</h4>
+                <span class="table-tag">BENCH SWEEP</span>
+              </div>
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Characteristic Measurement</th>
+                      <th>Parameter</th>
+                      <th>Laboratory Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Tunable Band Low End</td>
+                      <td>f_min</td>
+                      <td class="font-mono text-accent">675.5 kHz</td>
+                    </tr>
+                    <tr>
+                      <td>Tunable Band High End</td>
+                      <td>f_max</td>
+                      <td class="font-mono text-accent">1.2 MHz</td>
+                    </tr>
+                    <tr>
+                      <td>Resonant Frequency at Half Capacitor Travel</td>
+                      <td>f₀ (half travel)</td>
+                      <td class="font-mono text-accent">830 kHz</td>
+                    </tr>
+                    <tr>
+                      <td>Lower −3 dB Half-Power Frequency</td>
+                      <td>f_low</td>
+                      <td class="font-mono text-accent">197 kHz</td>
+                    </tr>
+                    <tr>
+                      <td>Upper −3 dB Half-Power Frequency</td>
+                      <td>f_high</td>
+                      <td class="font-mono text-accent">1000 kHz</td>
+                    </tr>
+                    <tr>
+                      <td>Tank Quality Factor Selectivity</td>
+                      <td>Q = f₀ / (f_high − f_low)</td>
+                      <td class="font-mono text-accent">1.033</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Table 6: Detector Performance -->
+            <div class="table-section">
+              <div class="table-header-row">
+                <h4 class="table-title">Table 6: Detector Performance at f₀ (TP1 RF Peak vs. TP3 Recovered DC)</h4>
+                <span class="table-tag">DIODE ENVELOPE</span>
+              </div>
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Generator Drive Voltage (V_src)</th>
+                      <th>TP1 RF Carrier Peak Amplitude</th>
+                      <th>TP3 Demodulated Output DC Voltage</th>
+                      <th>Detector Rectification Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>0.05 V</td>
+                      <td class="font-mono">90 mV</td>
+                      <td class="font-mono text-muted">0 mV</td>
+                      <td>Sub-threshold (Diode barrier unreached)</td>
+                    </tr>
+                    <tr>
+                      <td>0.10 V</td>
+                      <td class="font-mono">120 mV</td>
+                      <td class="font-mono text-amber">3 mV</td>
+                      <td>Onset of low-barrier conduction</td>
+                    </tr>
+                    <tr>
+                      <td>0.20 V</td>
+                      <td class="font-mono">215 mV</td>
+                      <td class="font-mono text-accent">42 mV</td>
+                      <td>Active envelope demodulation</td>
+                    </tr>
+                    <tr>
+                      <td>0.30 V</td>
+                      <td class="font-mono">330 mV</td>
+                      <td class="font-mono text-accent">112 mV</td>
+                      <td>Linear rectification range</td>
+                    </tr>
+                    <tr>
+                      <td>0.50 V</td>
+                      <td class="font-mono">520 mV</td>
+                      <td class="font-mono text-accent">260 mV</td>
+                      <td>High-level carrier tracking</td>
+                    </tr>
+                    <tr>
+                      <td>1.00 V</td>
+                      <td class="font-mono">1020 mV</td>
+                      <td class="font-mono text-green">707 mV</td>
+                      <td>Full peak envelope detection</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Interactive Drag / Slide Button for Laboratory Measurement Notes -->
+            <div class="lab-notes-interactive" id="lab-notes-interactive">
+              <div class="slider-drag-track" id="slider-drag-track" role="button" tabindex="0"
+                aria-label="Drag or click slider to reveal laboratory notes">
+                <div class="slider-drag-thumb" id="slider-drag-thumb">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </div>
+                <div class="slider-drag-labels">
+                  <span class="slider-drag-text" id="slider-drag-text">Drag or click slider to view lab measurement
+                    notes</span>
+                  <div class="slider-arrow-flow" aria-hidden="true">
+                    <span class="flow-arrow flow-arrow--1">›</span>
+                    <span class="flow-arrow flow-arrow--2">›</span>
+                    <span class="flow-arrow flow-arrow--3">›</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lab-notes-drawer" id="lab-notes-drawer">
+                <div class="lab-notes-card">
+                  <div class="lab-notes-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="16" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                    <span>LABORATORY EXPERIMENTAL NOTE</span>
+                  </div>
+                  <p class="lab-notes-text">
+                    Note: These experimental measurements were taken in the lab and are approximate (not measured with
+                    100% precision due to probe loading and component tolerances). We also gratefully acknowledge the
+                    collaboration and bench assistance from our peer laboratory team.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 3h. Challenges & Troubleshooting (ONLY WEAK COUPLING) ────────────── -->
+        <div class="doc-card glass-card" id="card-challenges">
+          <div class="doc-card__header">
+            <div class="card-header-flex">
+              <svg class="header-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                <line x1="12" y1="22.08" x2="12" y2="12" />
+              </svg>
+              <div>
+                <h3>Laboratory Challenge: Inductive Coil Coupling</h3>
+                <span class="card-caption">Critical mutual inductance analysis between primary test loop and secondary
+                  solenoid.</span>
+              </div>
+            </div>
+          </div>
+          <div class="doc-card__body" id="challenges-body">
+            <!-- Populated dynamically from data.js -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         TEAM & CONTACTS SECTION
+         ═══════════════════════════════════════════════════════ -->
+    <section class="team-section" id="team-section">
+      <div class="container">
+        <div class="section-title-wrapper">
+          <span class="section-kicker">PROJECT CONTRIBUTORS</span>
+          <h2 class="section-heading">Laboratory Team &amp; Contacts</h2>
+          <p class="section-subheading">Biomedical Engineering &amp; Electronics Design Group · Cairo University</p>
+        </div>
+
+        <div class="team-grid team-grid--two">
+          <!-- Member 1 -->
+          <div class="team-card glass-card">
+            <div class="team-avatar">
+              <span class="avatar-badge">SF</span>
+            </div>
+            <h4 class="team-name">Suty Fady</h4>
+            <a href="mailto:suty.makar06@eng-st.cu.edu.eg" class="team-email">suty.makar06@eng-st.cu.edu.eg</a>
+          </div>
+
+          <!-- Member 2 -->
+          <div class="team-card glass-card">
+            <div class="team-avatar">
+              <span class="avatar-badge">NA</span>
+            </div>
+            <h4 class="team-name">Nour Ahmed</h4>
+            <a href="mailto:nour.morsy05@eng-st.cu.edu.eg" class="team-email">nour.morsy05@eng-st.cu.edu.eg</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-top">
+        <span class="footer-brand">ELEG103 Analog and Digital Electronics</span>
+        <span class="footer-institution">Systems &amp; Biomedical Engineering Department · Faculty of Engineering ·
+          Cairo University</span>
+      </div>
+      <p class="footer-copy">Medium-Wave Radio DIY Documentation · Milestone 1 Front-End Demonstration</p>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LIGHTBOX MODAL
+       ═══════════════════════════════════════════════════════ -->
+  <div class="lightbox-overlay" id="lightbox" role="dialog" aria-modal="true"
+    aria-label="High-resolution laboratory image inspection">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Previous image">&#10094;</button>
+    <img src="" alt="" class="lightbox-image" id="lightbox-img" />
+    <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Next image">&#10095;</button>
+    <p class="lightbox-caption" id="lightbox-caption"></p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCRIPTS
+       ═══════════════════════════════════════════════════════ -->
   <script src="js/data.js"></script>
   <script src="js/circuit-drawer.js"></script>
   <script src="js/carousel.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>

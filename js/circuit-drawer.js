@@ -31,9 +31,10 @@ const CircuitDrawer = (function () {
   let dragOffset = { x: 0, y: 0 };
   let currentWire = null; // in-progress wire points: [{x, y}, ...]
   let hoverNode = null;
-  let animateSignal = true;
+  let animateSignal = false; // Calibrated static schematic without artificial moving current dots
   let animTime = 0;
   let animId = null;
+  let activeProbe = null; // 'tp1' or 'tp3' inspector
 
   // Symbol definitions and defaults
   const SYMBOLS = {
@@ -172,47 +173,44 @@ const CircuitDrawer = (function () {
     currentWire = null;
 
     if (milestoneIndex === 0) {
-      // Milestone 1: Generator → Test Loop → 75-Turn Coil (M1) → 1N60P Diode Detector
+      // Milestone 1: Function Generator (GEN) → 5-Turn Test Loop --(Mutual M)--> 75-Turn Tank (L1 || C1) → 1N60P Diode → R1 || C2 Load
       components = [
-        { id: 'gen1', type: 'vcc', x: 60, y: 200, rotation: 90, ref: 'GEN', val: 'Generator ~' },
-        { id: 'loop1', type: 'inductor', x: 160, y: 200, rotation: 0, ref: 'Test Loop', val: '5 turns' },
-        { id: 'l1', type: 'inductor', x: 300, y: 200, rotation: 0, ref: 'L₁ (M1)', val: '75 turns' },
-        { id: 'c1', type: 'var_capacitor', x: 380, y: 280, rotation: 90, ref: 'C₁', val: '20–280 pF' },
-        { id: 'd1', type: 'diode', x: 480, y: 140, rotation: 0, ref: 'D₁', val: '1N60P' },
-        { id: 'r1', type: 'resistor', x: 580, y: 220, rotation: 90, ref: 'R₁', val: '15 kΩ' },
-        { id: 'c2', type: 'capacitor', x: 660, y: 220, rotation: 90, ref: 'C₂', val: '3.3 nF' },
-        { id: 'gnd1', type: 'ground', x: 300, y: 360, rotation: 0, ref: 'GND', val: 'Ground' },
-        { id: 'gnd2', type: 'ground', x: 620, y: 360, rotation: 0, ref: 'GND', val: 'Ground' }
+        { id: 'gen1', type: 'vcc', x: 80, y: 160, rotation: 0, ref: 'GEN', val: '0.1V 819kHz' },
+        { id: 'loop1', type: 'inductor', x: 80, y: 260, rotation: 90, ref: 'Test Loop', val: '5 turns' },
+        { id: 'gnd_gen', type: 'ground', x: 80, y: 375, rotation: 0, ref: 'GND', val: '0 V' },
+
+        { id: 'l1', type: 'inductor', x: 260, y: 260, rotation: 90, ref: 'L₁ (M1)', val: '75T (291µH)' },
+        { id: 'c1', type: 'var_capacitor', x: 360, y: 260, rotation: 90, ref: 'C₁', val: '20–280 pF' },
+        { id: 'gnd_tank', type: 'ground', x: 310, y: 375, rotation: 0, ref: 'GND', val: '0 V' },
+
+        { id: 'd1', type: 'diode', x: 470, y: 160, rotation: 0, ref: 'D₁', val: '1N60P Ge' },
+
+        { id: 'r1', type: 'resistor', x: 570, y: 260, rotation: 90, ref: 'R₁', val: '15 kΩ' },
+        { id: 'c2', type: 'capacitor', x: 650, y: 260, rotation: 90, ref: 'C₂', val: '3.3 nF' },
+        { id: 'gnd_load', type: 'ground', x: 610, y: 375, rotation: 0, ref: 'GND', val: '0 V' }
       ];
 
       wires = [
-        // Generator to test loop
-        [{ x: 75, y: 200 }, { x: 130, y: 200 }],
-        // Test loop to coil (dashed coupling gap)
-        [{ x: 190, y: 200 }, { x: 220, y: 200 }],
-        // Coupling gap (visual only, small space)
-        [{ x: 240, y: 200 }, { x: 270, y: 200 }],
-        // Coil top bus → TP1 → diode
-        [{ x: 300, y: 140 }, { x: 380, y: 140 }, { x: 455, y: 140 }],
-        // Coil connected vertically
-        [{ x: 300, y: 140 }, { x: 300, y: 170 }],
-        [{ x: 300, y: 230 }, { x: 300, y: 320 }],
-        // Variable cap connections
-        [{ x: 380, y: 140 }, { x: 380, y: 260 }],
-        [{ x: 380, y: 300 }, { x: 380, y: 320 }],
-        // Bottom bus (ground rail)
-        [{ x: 300, y: 320 }, { x: 380, y: 320 }, { x: 580, y: 320 }, { x: 660, y: 320 }],
-        [{ x: 300, y: 320 }, { x: 300, y: 345 }],
-        // Diode output → TP3 output bus
-        [{ x: 505, y: 140 }, { x: 580, y: 140 }, { x: 660, y: 140 }, { x: 720, y: 140 }],
-        // R1 connections
-        [{ x: 580, y: 140 }, { x: 580, y: 190 }],
-        [{ x: 580, y: 250 }, { x: 580, y: 320 }],
-        // C2 connections
-        [{ x: 660, y: 140 }, { x: 660, y: 200 }],
-        [{ x: 660, y: 240 }, { x: 660, y: 320 }],
-        // Ground connection
-        [{ x: 620, y: 320 }, { x: 620, y: 345 }]
+        // Primary Drive Loop: GEN to Test Loop to GND
+        [{ x: 80, y: 175 }, { x: 80, y: 230 }],
+        [{ x: 80, y: 290 }, { x: 80, y: 360 }],
+
+        // Tank Top RF Rail & Diode Anode input
+        [{ x: 260, y: 230 }, { x: 260, y: 160 }, { x: 360, y: 160 }, { x: 445, y: 160 }],
+        [{ x: 360, y: 160 }, { x: 360, y: 240 }],
+
+        // Tank Bottom Ground Rail
+        [{ x: 260, y: 290 }, { x: 260, y: 360 }, { x: 360, y: 360 }],
+        [{ x: 360, y: 280 }, { x: 360, y: 360 }],
+
+        // Diode Cathode Output through R1 || C2 and line continuing past 3.3 nF capacitor to output
+        [{ x: 495, y: 160 }, { x: 570, y: 160 }, { x: 650, y: 160 }, { x: 780, y: 160 }],
+        [{ x: 570, y: 160 }, { x: 570, y: 230 }],
+        [{ x: 650, y: 160 }, { x: 650, y: 240 }],
+
+        // Demodulation Load Ground Rail continuing past 3.3 nF capacitor on the other hand
+        [{ x: 570, y: 290 }, { x: 570, y: 360 }, { x: 650, y: 360 }, { x: 780, y: 360 }],
+        [{ x: 650, y: 280 }, { x: 650, y: 360 }]
       ];
     } else if (milestoneIndex === 1) {
       // Milestone 2: Audio Amplifier
@@ -316,12 +314,18 @@ const CircuitDrawer = (function () {
   function draw() {
     if (!ctx) return;
 
-    // Background
-    ctx.fillStyle = '#081220';
+    // Background - Engineering Slate
+    ctx.fillStyle = '#0d111a';
     ctx.fillRect(0, 0, width, height);
 
     // Coordinate Blueprint Grid
     drawGrid();
+
+    // Electrical Circuit Continuity & Node Analysis
+    const analysis = analyzeCircuit();
+
+    // Draw wireless mutual inductive coupling between coils
+    drawMagneticCoupling(analysis);
 
     // Draw all wires
     drawWires();
@@ -337,16 +341,22 @@ const CircuitDrawer = (function () {
     // Draw connection pins/nodes
     drawPins();
 
-    // Animated signal / electron pulse along wires
-    if (animateSignal && wires.length > 0) {
-      drawSignalFlow();
+    // Draw output terminals (past the 3.3 nF capacitor)
+    drawOutputTerminals();
+
+    // Animated signal / electron pulse along active closed wires only
+    if (animateSignal && analysis.activeWires.size > 0) {
+      drawSignalFlow(analysis);
     }
+
+    // Real-time circuit status HUD badge
+    drawStatusBadge(analysis);
   }
 
   /** Draw blueprint grid lines */
   function drawGrid() {
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(30, 58, 95, 0.35)';
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
 
     ctx.beginPath();
     for (let x = 0; x < width; x += GRID_SIZE) {
@@ -360,12 +370,336 @@ const CircuitDrawer = (function () {
     ctx.stroke();
 
     // Major grid dots
-    ctx.fillStyle = 'rgba(0, 242, 254, 0.15)';
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
     for (let x = 0; x < width; x += GRID_SIZE * 2) {
       for (let y = 0; y < height; y += GRID_SIZE * 2) {
         ctx.fillRect(x - 1, y - 1, 2, 2);
       }
     }
+  }
+
+  /**
+   * Evaluates circuit continuity and identifies which wires form complete circuits.
+   */
+  function analyzeCircuit() {
+    const activeWires = new Set();
+    if (wires.length === 0) {
+      return {
+        activeWires,
+        primaryClosed: false,
+        tankResonant: false,
+        detectorActive: false,
+        statusMsg: 'Circuit Empty — Place components and connect terminals.',
+        statusOk: false
+      };
+    }
+
+    function touchesWire(p, w) {
+      for (let i = 0; i < w.length; i++) {
+        if (Math.hypot(p.x - w[i].x, p.y - w[i].y) <= 14) return true;
+      }
+      for (let i = 0; i < w.length - 1; i++) {
+        if (distToSegment(p, w[i], w[i + 1]) <= 8) return true;
+      }
+      return false;
+    }
+
+    function wiresTouch(w1, w2) {
+      for (let i = 0; i < w1.length; i++) {
+        if (touchesWire(w1[i], w2)) return true;
+      }
+      return false;
+    }
+
+    // Form connected wire networks
+    const wireGroups = [];
+    const visited = new Set();
+    wires.forEach(w => {
+      if (visited.has(w)) return;
+      const group = [];
+      const queue = [w];
+      visited.add(w);
+      while (queue.length > 0) {
+        const cur = queue.shift();
+        group.push(cur);
+        wires.forEach(other => {
+          if (!visited.has(other) && wiresTouch(cur, other)) {
+            visited.add(other);
+            queue.push(other);
+          }
+        });
+      }
+      wireGroups.push(group);
+    });
+
+    function getGroupTouchingPin(pin) {
+      for (const group of wireGroups) {
+        for (const w of group) {
+          if (touchesWire(pin, w)) return group;
+        }
+      }
+      return null;
+    }
+
+    // Identify circuit landmarks
+    const gen = components.find(c => c.type === 'vcc' || (c.ref && c.ref.toUpperCase().includes('GEN')));
+    const loop = components.find(c => (c.ref && c.ref.toLowerCase().includes('loop')) || (c.type === 'inductor' && c.x < 180));
+    const tankL = components.find(c => c.type === 'inductor' && c !== loop);
+    const tankC = components.find(c => c.type === 'var_capacitor' || (c.type === 'capacitor' && c.x > 200 && c.x < 420));
+    const diode = components.find(c => c.type === 'diode');
+    const loadR = components.find(c => c.type === 'resistor' && c.x > 500);
+    const loadC = components.find(c => c.type === 'capacitor' && c.x > 500);
+    const grounds = components.filter(c => c.type === 'ground');
+
+    let primaryClosed = false;
+    let tankResonant = false;
+    let detectorActive = false;
+    let statusMsg = '';
+    let statusOk = false;
+
+    // 1. Check Primary Generator Loop
+    if (gen && loop) {
+      const genPins = getAbsolutePins(gen);
+      const loopPins = getAbsolutePins(loop);
+      if (genPins.length > 0 && loopPins.length >= 2) {
+        const gGen = getGroupTouchingPin(genPins[0]);
+        const connectsGenToLoop = gGen && loopPins.some(lp => gGen.some(w => touchesWire(lp, w)));
+        const connectsLoopToGnd = grounds.some(gnd => {
+          return getAbsolutePins(gnd).some(gp => {
+            const grp = getGroupTouchingPin(gp);
+            return grp && loopPins.some(lp => grp.some(w => touchesWire(lp, w)));
+          });
+        });
+
+        if (connectsGenToLoop && connectsLoopToGnd) {
+          primaryClosed = true;
+          if (gGen) gGen.forEach(w => activeWires.add(w));
+          grounds.forEach(gnd => {
+            getAbsolutePins(gnd).forEach(gp => {
+              const grp = getGroupTouchingPin(gp);
+              if (grp && loopPins.some(lp => grp.some(w => touchesWire(lp, w)))) {
+                grp.forEach(w => activeWires.add(w));
+              }
+            });
+          });
+        }
+      }
+    }
+
+    // 2. Check Resonant Tank Loop
+    const topTankPins = [];
+    const botTankPins = [];
+    if (tankL) {
+      const lPins = getAbsolutePins(tankL);
+      if (lPins.length >= 2) {
+        topTankPins.push(lPins[0].y < lPins[1].y ? lPins[0] : lPins[1]);
+        botTankPins.push(lPins[0].y < lPins[1].y ? lPins[1] : lPins[0]);
+      }
+    }
+    if (tankC) {
+      const cPins = getAbsolutePins(tankC);
+      if (cPins.length >= 2) {
+        topTankPins.push(cPins[0].y < cPins[1].y ? cPins[0] : cPins[1]);
+        botTankPins.push(cPins[0].y < cPins[1].y ? cPins[1] : cPins[0]);
+      }
+    }
+
+    if (primaryClosed && (tankL || tankC)) {
+      const botConnectedGnd = grounds.some(gnd => {
+        return getAbsolutePins(gnd).some(gp => {
+          const grp = getGroupTouchingPin(gp);
+          return grp && botTankPins.some(bp => grp.some(w => touchesWire(bp, w)));
+        });
+      });
+
+      const topGroup = topTankPins.length > 0 ? getGroupTouchingPin(topTankPins[0]) : null;
+
+      if (botConnectedGnd && topGroup) {
+        tankResonant = true;
+        if (topGroup) topGroup.forEach(w => activeWires.add(w));
+        grounds.forEach(gnd => {
+          getAbsolutePins(gnd).forEach(gp => {
+            const grp = getGroupTouchingPin(gp);
+            if (grp && botTankPins.some(bp => grp.some(w => touchesWire(bp, w)))) {
+              grp.forEach(w => activeWires.add(w));
+            }
+          });
+        });
+      }
+    }
+
+    // 3. Check Diode Detector & Demodulation Load
+    if (tankResonant && diode && (loadR || loadC)) {
+      const dPins = getAbsolutePins(diode);
+      if (dPins.length >= 2) {
+        const anode = dPins[0].x < dPins[1].x ? dPins[0] : dPins[1];
+        const cathode = dPins[0].x < dPins[1].x ? dPins[1] : dPins[0];
+
+        const anodeGroup = getGroupTouchingPin(anode);
+        const anodeOnTank = anodeGroup && topTankPins.some(tp => anodeGroup.some(w => touchesWire(tp, w)));
+
+        const loadTopPins = [];
+        const loadBotPins = [];
+        if (loadR) {
+          const rPins = getAbsolutePins(loadR);
+          if (rPins.length >= 2) {
+            loadTopPins.push(rPins[0].y < rPins[1].y ? rPins[0] : rPins[1]);
+            loadBotPins.push(rPins[0].y < rPins[1].y ? rPins[1] : rPins[0]);
+          }
+        }
+        if (loadC) {
+          const cPins = getAbsolutePins(loadC);
+          if (cPins.length >= 2) {
+            loadTopPins.push(cPins[0].y < cPins[1].y ? cPins[0] : cPins[1]);
+            loadBotPins.push(cPins[0].y < cPins[1].y ? cPins[1] : cPins[0]);
+          }
+        }
+
+        const cathodeGroup = getGroupTouchingPin(cathode);
+        const cathodeOnLoad = cathodeGroup && loadTopPins.some(lp => cathodeGroup.some(w => touchesWire(lp, w)));
+
+        const loadOnGnd = grounds.some(gnd => {
+          return getAbsolutePins(gnd).some(gp => {
+            const grp = getGroupTouchingPin(gp);
+            return grp && loadBotPins.some(bp => grp.some(w => touchesWire(bp, w)));
+          });
+        });
+
+        if (anodeOnTank && cathodeOnLoad && loadOnGnd) {
+          detectorActive = true;
+          if (cathodeGroup) cathodeGroup.forEach(w => activeWires.add(w));
+          grounds.forEach(gnd => {
+            getAbsolutePins(gnd).forEach(gp => {
+              const grp = getGroupTouchingPin(gp);
+              if (grp && loadBotPins.some(bp => grp.some(w => touchesWire(bp, w)))) {
+                grp.forEach(w => activeWires.add(w));
+              }
+            });
+          });
+        }
+      }
+    }
+
+    if (primaryClosed && tankResonant && detectorActive) {
+      statusOk = true;
+      statusMsg = 'RF Resonance & Diode Detection Active — 819 kHz Tuned | TP1: 120 mV pk | TP3: 42 mV DC';
+    } else if (!primaryClosed) {
+      statusOk = false;
+      statusMsg = 'Open Circuit: Primary drive loop is broken (GEN or 5-Turn Loop disconnected).';
+    } else if (!tankResonant) {
+      statusOk = false;
+      statusMsg = 'Open Circuit: LC Tank is disconnected from Ground or TP1 rail. Resonance lost.';
+    } else {
+      statusOk = false;
+      statusMsg = 'Open Circuit: Detector branch is disconnected (Diode D₁ or RC load missing ground return).';
+    }
+
+    return {
+      activeWires,
+      primaryClosed,
+      tankResonant,
+      detectorActive,
+      statusMsg,
+      statusOk
+    };
+  }
+
+  /** Draw animated magnetic flux curves between Test Loop and Solenoid */
+  function drawMagneticCoupling(analysis) {
+    const loop = components.find(c => c.ref && c.ref.toLowerCase().includes('loop'));
+    const l1 = components.find(c => c.type === 'inductor' && c !== loop);
+    if (!loop || !l1) return;
+
+    ctx.save();
+    const x1 = loop.x + 24;
+    const x2 = l1.x - 24;
+    const midY = (loop.y + l1.y) / 2;
+    const isActive = analysis && analysis.primaryClosed;
+
+    ctx.strokeStyle = isActive
+      ? `rgba(245, 158, 11, ${0.45 + 0.3 * Math.sin(animTime * 3)})`
+      : 'rgba(100, 116, 139, 0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      const cy = midY + i * 22;
+      ctx.moveTo(x1, cy);
+      const wave = isActive ? Math.sin(animTime * 2.5 + i) * 6 : 0;
+      ctx.quadraticCurveTo((x1 + x2) / 2, cy - wave, x2, cy);
+      ctx.stroke();
+    }
+
+    ctx.setLineDash([]);
+    ctx.font = '600 10px Inter, sans-serif';
+    ctx.fillStyle = isActive ? '#f59e0b' : '#64748b';
+    ctx.textAlign = 'center';
+    ctx.fillText(isActive ? 'Mutual Coupling M (k ≈ 0.12)' : 'Decoupled (GEN Loop Open)', (x1 + x2) / 2, midY - 26);
+    ctx.restore();
+  }
+
+  /** Draw clean output terminals on the other hand of the 3.3 nF filter capacitor */
+  function drawOutputTerminals() {
+    ctx.save();
+    // Top Output Terminal (Detected Audio / DC Level)
+    ctx.strokeStyle = '#06b6d4';
+    ctx.fillStyle = '#0b0f17';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(780, 160, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#67e8f9';
+    ctx.font = '700 11px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('AUDIO / DC OUT', 792, 164);
+
+    // Bottom Output Terminal (Ground Return)
+    ctx.strokeStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(780, 360, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('GND', 792, 364);
+
+    ctx.restore();
+  }
+
+  /** Draw real-time simulation status badge on canvas */
+  function drawStatusBadge(analysis) {
+    ctx.save();
+    const isOk = analysis && analysis.statusOk;
+    const bg = isOk ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+    const stroke = isOk ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)';
+    const textCol = isOk ? '#34d399' : '#f87171';
+    const dotCol = isOk ? '#10b981' : '#ef4444';
+
+    ctx.fillStyle = bg;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(width - 240, 14, 226, 28, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // LED status indicator
+    ctx.beginPath();
+    ctx.arc(width - 226, 28, 4, 0, Math.PI * 2);
+    ctx.fillStyle = dotCol;
+    ctx.shadowColor = dotCol;
+    ctx.shadowBlur = isOk ? 8 : 4;
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = textCol;
+    ctx.font = '600 10.5px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(isOk ? 'SIM: 819 kHz Resonance OK' : 'SIM: Open Circuit Detected', width - 216, 32);
+    ctx.restore();
   }
 
   /** Draw all completed wires */
@@ -417,14 +751,18 @@ const CircuitDrawer = (function () {
     }
   }
 
-  /** Draw animated current / signal flow pulses */
-  function drawSignalFlow() {
+  /** Draw animated current / signal flow pulses ONLY on active closed wires */
+  function drawSignalFlow(analysis) {
+    if (!analysis || !analysis.activeWires || analysis.activeWires.size === 0) return;
+
     ctx.save();
     ctx.fillStyle = '#00F2FE';
     ctx.shadowColor = '#00F2FE';
     ctx.shadowBlur = 6;
 
-    wires.forEach((w, wi) => {
+    let wi = 0;
+    analysis.activeWires.forEach(w => {
+      wi++;
       if (w.length < 2) return;
       for (let i = 0; i < w.length - 1; i++) {
         const p1 = w[i];
@@ -432,7 +770,6 @@ const CircuitDrawer = (function () {
         const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
         if (dist === 0) continue;
 
-        // Animate particles along segment
         const count = Math.max(1, Math.floor(dist / 40));
         for (let j = 0; j < count; j++) {
           const t = ((animTime * 1.5 + j / count + wi * 0.2) % 1 + 1) % 1;
@@ -1037,6 +1374,7 @@ const CircuitDrawer = (function () {
     toggleSignalFlow,
     exportImage,
     undo,
-    loadMilestonePreset
+    loadMilestonePreset,
+    inspectTP
   };
 })();
